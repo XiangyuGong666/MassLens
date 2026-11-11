@@ -1,0 +1,158 @@
+/* 膜 · 纯净模式：全屏深色 + 极简浮件 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  background: radial-gradient(1200px 700px at 50% 30%, #101a30 0%, #070b16 65%, #04070f 100%);
+  color: #dbe4f5;
+  font: 14px/1.5 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; }
+
+#brand {
+  position: fixed; top: 18px; left: 22px; right: 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none; z-index: 5;
+}
+.b-title { font-size: 15px; letter-spacing: 2px; color: #8fa3c8; }
+.b-back {
+  pointer-events: auto; color: #6b7fa6; text-decoration: none; font-size: 12px;
+  padding: 5px 10px; border: 1px solid rgba(107,127,166,.25); border-radius: 8px;
+}
+.b-back:hover { color: #dbe4f5; border-color: rgba(219,228,245,.5); }
+
+#chip {
+  position: fixed; top: 56px; left: 22px; z-index: 5;
+  display: flex; gap: 14px; font-size: 13px; color: #9fb2d6;
+}
+#chip-wind { color: #7dd3fc; font-variant-numeric: tabular-nums; }
+
+/* 能量覆盖注记（爆炸视图顶部居中） */
+#cover-note {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 13px; color: #9fb2d6; letter-spacing: 1px;
+  pointer-events: none; z-index: 5;
+  font-variant-numeric: tabular-nums;
+}
+#cover-note:empty { display: none; }
+
+/* 最不利组合对照卡（覆盖注记下） */
+#danger-note {
+  position: fixed; top: 46px; left: 50%; transform: translateX(-50%);
+  max-width: 76vw; text-align: center;
+  font-size: 12px; line-height: 1.7; z-index: 5;
+  pointer-events: none;
+}
+#danger-note:empty { display: none; }
+#danger-note.warn { color: #fbbf24; }
+#danger-note.safe { color: #6ee7b7; }
+#danger-note .danger-avoid { color: #8fa3c8; font-size: 11px; }
+
+/* 最大位移/主应变读数卡（左下，避让播放坞） */
+#maxtrack-note {
+  position: fixed; left: 22px; bottom: 96px; z-index: 5;
+  max-width: 46vw;
+  padding: 6px 12px; border-radius: 10px;
+  background: rgba(13, 20, 38, .55);
+  border: 1px solid rgba(120, 144, 190, .16);
+  color: #b7c6e6; font-size: 12px; font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+#maxtrack-note:empty { display: none; }
+
+#hint {
+  position: fixed; left: 50%; bottom: 118px; transform: translateX(-50%);
+  text-align: center; font-size: 13px; line-height: 1.9; color: #7d92b8;
+  transition: opacity 1.2s ease; pointer-events: none; z-index: 4;
+}
+#hint.gone { opacity: 0; }
+
+/* 模态标签（爆炸视图） */
+#mode-labels { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+.mlabel {
+  position: absolute; transform: translate(-50%, 0);
+  text-align: center; transition: opacity .5s ease;
+  opacity: 0;
+}
+.mlabel .m-name { font-size: 13px; color: #c7d6f2; letter-spacing: 1px; }
+.mlabel .m-freq { font-size: 12px; color: #8fa3c8; font-variant-numeric: tabular-nums; }
+.mlabel .m-bar {
+  width: 110px; height: 4px; margin: 6px auto 0; border-radius: 3px;
+  background: rgba(143,163,200,.18); overflow: hidden;
+}
+.mlabel .m-bar > i {
+  display: block; height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #38bdf8, #a0da39);
+}
+.mlabel .m-w { font-size: 15px; color: #e8eefb; margin-top: 4px;
+  font-variant-numeric: tabular-nums; }
+.mlabel.show { opacity: 1; }
+
+/* 底部播放坞 */
+#dock {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  width: min(880px, calc(100vw - 48px));
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px; z-index: 5;
+  background: rgba(13, 20, 38, .62);
+  border: 1px solid rgba(120, 144, 190, .16);
+  border-radius: 16px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+}
+.d-btn {
+  width: 34px; height: 34px; flex: none;
+  border-radius: 50%; border: 1px solid rgba(120, 144, 190, .3);
+  background: rgba(120, 144, 190, .12); color: #dbe4f5;
+  font-size: 13px; cursor: pointer; transition: all .2s;
+}
+.d-btn:hover { background: rgba(120, 144, 190, .28); }
+.d-btn.accent {
+  width: auto; border-radius: 10px; padding: 0 12px;
+  color: #0b1220; background: #7dd3fc; border-color: #7dd3fc; font-weight: 600;
+}
+.d-sel {
+  flex: none; background: rgba(120, 144, 190, .12); color: #dbe4f5;
+  border: 1px solid rgba(120, 144, 190, .3); border-radius: 8px;
+  padding: 5px 8px; font-size: 12px; outline: none;
+}
+#time-slider { flex: 1; accent-color: #7dd3fc; height: 4px; cursor: pointer; }
+#time-text {
+  flex: none; min-width: 118px; text-align: right;
+  font-size: 12px; color: #9fb2d6; font-variant-numeric: tabular-nums;
+}
+
+/* 加载与提示 */
+#loading {
+  position: fixed; inset: 0; z-index: 20;
+  display: flex; flex-direction: column; gap: 18px;
+  align-items: center; justify-content: center;
+  background: rgba(4, 7, 15, .9); transition: opacity .6s ease;
+}
+#loading.done { opacity: 0; pointer-events: none; }
+.ring {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 3px solid rgba(125, 211, 252, .2); border-top-color: #7dd3fc;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading-text { font-size: 13px; color: #8fa3c8; }
+#toast {
+  position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%);
+  padding: 8px 18px; border-radius: 10px; z-index: 8;
+  background: rgba(13, 20, 38, .85); border: 1px solid rgba(120, 144, 190, .25);
+  color: #dbe4f5; font-size: 13px; opacity: 0; transition: opacity .4s;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; }
+
+/* 全净模式：闲置时隐藏一切浮件（鼠标活动/分解视图自动浮现） */
+body.ui-hidden #brand,
+body.ui-hidden #chip,
+body.ui-hidden #dock {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .8s ease;
+}
+#brand, #chip, #dock { transition: opacity .8s ease; }

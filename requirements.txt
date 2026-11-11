@@ -1,0 +1,5 @@
+# Runtime dependencies (tested: Python 3.12 + numpy 1.26.4 / scipy 1.13.1 / h5py 3.11.0)
+numpy>=1.26
+scipy>=1.11
+h5py>=3.8
+pywebview>=5  # desktop variant: native window via WebView2 (no browser needed)

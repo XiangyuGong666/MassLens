@@ -1,0 +1,21 @@
+! ============================================================
+! run_case.inp -- MassLens single-case entry (template, ASCII only!)
+! masslens_data.sweep renders @MASS_A@, binary-patches the added-mass
+! density into run_pressure_only.rdb (planC path, verified 2026-10-15:
+! m_a*=1.333 -> f1=0.550045), copies the export macro into the MAPDL
+! working dir (ml_lp20_export.mac), then runs MAPDL in batch mode under
+! the configured MAPDL work directory.
+! NOTE: the db is never doctored and never copied over the rdb -- that
+! trick breaks the LP restart on this model (the db carries the post-modal
+! MODAL analysis type, so MAPDL rejects ANTYPE,,RESTART,,,PERTURB with
+! "prestressed analysis may not be performed when the previous analysis
+! used NLGEOM,ON").
+! Flow: resume db -> true E swap -> LP modal 20 -> export text
+! (all inside ml_lp20_export.mac)
+! MASS_A = @MASS_A@   (record only; density lives in the patched rdb)
+! ============================================================
+FINISH
+/FILNAME,run_pressure_only,1
+/INPUT,'ml_lp20_export','mac'
+
+/EXIT,NOSAVE

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>膜 · 纯净模式 — MassLens</title>
+<link rel="stylesheet" href="/static/zen.css?v=1">
+<script type="importmap">
+{"imports": {"three": "/static/vendor/three.module.min.js",
+             "three/addons/": "/static/vendor/addons/"}}
+</script>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <header id="brand">
+    <span class="b-title">膜 · 纯净模式</span>
+    <a class="b-back" href="/" title="返回双实验室">↩ 实验室</a>
+  </header>
+
+  <div id="chip">
+    <span id="chip-date">—</span>
+    <span id="chip-wind">— m/s</span>
+    <span id="demo-label" hidden>合成风振演示</span>
+  </div>
+  <div id="cover-note"></div>
+  <div id="danger-note"></div>
+
+  <div id="hint">拖动旋转 · 滚轮缩放<br>点击膜面：分解为三个主导模态</div>
+
+  <div id="mode-labels"></div>
+  <div id="maxtrack-note" title="红点=当前最大位移 · 青点=当前最大主应变 · 琥珀/浅青=近 30 min 轨迹"></div>
+
+  <footer id="dock">
+    <button id="btn-play" class="d-btn" title="播放/暂停（空格）">❚❚</button>
+    <input id="time-slider" type="range" min="0" max="0" step="1" value="0">
+    <span id="time-text">—</span>
+    <select id="speed" class="d-sel" title="播放速度">
+      <option value="15">15×</option>
+      <option value="30">30×</option>
+      <option value="60" selected>60×</option>
+      <option value="120">120×</option>
+      <option value="300">300×</option>
+    </select>
+    <button id="btn-merge" class="d-btn accent" hidden>复合 ⟵</button>
+  </footer>
+
+  <div id="loading"><div class="ring"></div><div id="loading-text">正在准备数据 …</div></div>
+  <div id="toast"></div>
+
+  <script type="module" src="/static/zen.js?v=1"></script>
+</body>
+</html>

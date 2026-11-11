@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MassLens 质量透镜 · WindLens 风透镜</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%230e1424' stroke='%23f59e0b' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f59e0b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="/static/style.css?v=11">
+<link rel="stylesheet" href="/static/wind.css?v=11">
+<script defer src="/static/vendor/katex/katex.min.js"></script>
+<script type="importmap">
+{"imports": {"three": "/static/vendor/three.module.min.js",
+             "three/addons/": "/static/vendor/addons/"}}
+</script>
+</head>
+<body>
+
+<header id="topbar">
+  <div id="brand">MassLens <span id="brand-cn">质量透镜</span><span id="brand-sep">·</span><span id="brand-cn2">风透镜</span></div>
+  <nav id="mode-nav">
+    <a class="nav-tab" data-page="masslens" href="/">附加质量实验室</a>
+    <a class="nav-tab" data-page="wind" href="/wind">风振监测实验室</a>
+    <a class="zen-link" href="/zen" title="全屏膜面 · 点击拆解主导模态">纯净模式</a>
+  </nav>
+  <div id="structure-note"></div>
+</header>
+
+<!-- ============ 模块一：附加质量实验室 ============ -->
+<main id="main-m" class="columns">
+
+  <!-- 左栏：附加质量控制台 -->
+  <section id="control-panel" class="panel">
+    <h2>附加质量</h2>
+
+    <label class="field-label" for="preset-select">预设工况</label>
+    <select id="preset-select"></select>
+
+    <label class="field-label" for="ma-slider">附加质量面密度 m<sub>a</sub></label>
+    <div id="ma-readout"><span id="ma-value">0.000</span><span class="unit">kg/m²</span></div>
+    <input type="range" id="ma-slider" min="0" max="2" step="0.005" value="0">
+    <div id="ma-ticks"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0</span></div>
+
+    <div class="divider"></div>
+    <p class="note">附加质量均布于膜面（索不加），数据库来自 ANSYS 离线参数化扫描，
+       本软件只做插值与渲染。</p>
+    <button id="combo-lib-btn" title="最不利模态组合集合（离线穷举 · 等权同相包络）">模态组合库</button>
+  </section>
+
+  <!-- 中栏：公式与数值面板 -->
+  <section id="formula-panel" class="panel">
+    <h2>控制方程</h2>
+    <div id="formula-eq" class="formula"></div>
+    <div id="formula-mass" class="formula small"></div>
+
+    <h2>当前模态</h2>
+    <div id="cur-card">
+      <div id="cur-mode-label">第 1 阶</div>
+      <div id="cur-freq">— Hz</div>
+      <div id="cur-shift" class="muted">相对基准 —</div>
+    </div>
+
+    <h2>插值质量</h2>
+    <div id="quality-card">
+      <div class="q-row"><span class="q-label">MAC 匹配度</span><span id="mac-text" class="q-value">—</span></div>
+      <div id="mac-bar"><div id="mac-mask"></div></div>
+      <div id="mac-hint" class="q-hint" hidden>当前区域模态跟踪置信度较低，显示结果仅供参考</div>
+      <div id="err-badge" class="q-hint warn" hidden>该区域插值误差约 <span id="err-text"></span>，仅供参考</div>
+    </div>
+
+    <h2>频率表 <span class="muted h2-note">（前 10 阶，点击选阶）</span></h2>
+    <table id="freq-table">
+      <thead><tr><th>阶次</th><th>频率 (Hz)</th><th>相对基准</th></tr></thead>
+      <tbody id="freq-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- 右栏：3D 索网视图 -->
+  <section class="view-panel">
+    <div id="viewport-m" class="viewport"></div>
+
+    <div id="freq-chip-m" class="freq-chip"><span id="chip-mode">第 1 阶</span><span id="chip-freq">— Hz</span></div>
+
+    <div id="legend-m" class="legend">
+      <span class="legend-label">幅值</span>
+      <div id="legend-bar"></div>
+    </div>
+
+    <div id="speed-box">
+      <label for="speed-slider">动画速度</label>
+      <input type="range" id="speed-slider" min="0.1" max="2.0" step="0.05" value="0.6">
+    </div>
+
+    <div id="perf" hidden>— ms · — fps</div>
+
+    <div id="mode-strip"></div>
+  </section>
+
+</main>
+
+<!-- ============ 模块二：风振监测实验室 ============ -->
+<main id="main-w" class="columns" hidden>
+
+  <!-- 左栏：风况与数据控制台 -->
+  <section id="control-panel-w" class="panel">
+    <h2>时间轴</h2>
+    <div id="play-row">
+      <button id="play-btn" title="播放/暂停">▶</button>
+      <select id="speed-select">
+        <option value="10">10×</option>
+        <option value="60" selected>60×</option>
+        <option value="240">240×</option>
+        <option value="1000">1000×</option>
+      </select>
+      <span id="win-label" class="mono">窗 0 · 第 1 天 00:00</span>
+    </div>
+    <canvas id="timeline" height="72" title="拖动定位（全程风速曲线）"></canvas>
+    <label class="field-label" for="event-select">大风事件跳转</label>
+    <select id="event-select"></select>
+
+    <label class="field-label" for="segment-select">精华段（10 Hz 原始序列）</label>
+    <select id="segment-select"></select>
+    <div id="hl-row">
+      <span class="field-label" style="margin:0">高光瞬间（|脉动风压| 峰）</span>
+      <button id="hl-prev" class="hl-btn" title="上一个">⏮</button>
+      <span id="hl-label" class="mono">—</span>
+      <button id="hl-next" class="hl-btn" title="下一个">⏭</button>
+    </div>
+
+    <h2>当前风况</h2>
+    <div id="wind-card">
+      <div id="wind-speed-big">— <span class="unit">m/s</span></div>
+      <svg id="compass" viewBox="0 0 100 100" width="86" height="86">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#1e2a45" stroke-width="2"/>
+        <text x="50" y="14" text-anchor="middle" fill="#8b98b8" font-size="9">0°</text>
+        <text x="50" y="96" text-anchor="middle" fill="#8b98b8" font-size="9">180°</text>
+        <text x="8" y="53" text-anchor="middle" fill="#8b98b8" font-size="9">270°</text>
+        <text x="92" y="53" text-anchor="middle" fill="#8b98b8" font-size="9">90°</text>
+        <g id="compass-arrow">
+          <path d="M50 18 L56 56 L50 50 L44 56 Z" fill="#38bdf8"/>
+        </g>
+        <text id="compass-deg" x="50" y="68" text-anchor="middle" fill="#dbe4f5" font-size="12">—</text>
+      </svg>
+    </div>
+    <canvas id="wind-micro" height="34" title="段内 60 s 风速微趋势"></canvas>
+
+    <h2>脉动风压强度 <span class="muted h2-note">（去基线，非绝对风压）</span></h2>
+    <div id="press-bars" class="bar-list"></div>
+
+    <h2>GNSS 动态位移强度 <span class="muted h2-note">（动态分量）</span></h2>
+    <div id="gnss-bars" class="bar-list"></div>
+  </section>
+
+  <!-- 中栏：模态监测面板 -->
+  <section id="modal-panel" class="panel">
+    <h2>模态参与量 <span class="muted h2-note">（谱峰提取 · 对照新模型 FE 基，固定前 4 槽）</span></h2>
+    <div id="peaks-card">
+      <div id="peaks-empty" class="q-hint">此时段模态低于识别阈值（信噪比不足）</div>
+      <div id="peaks-lowq" class="q-hint lowq">本时段仅 C 级低置信峰（参考显示）</div>
+      <div id="peaks-bars" class="bar-list"></div>
+    </div>
+
+    <h2>估计附加质量 m̂<sub>a</sub> <span class="muted h2-note">（由基频峰反演）</span></h2>
+    <div id="ma-card">
+      <div id="ma-big">— <span class="unit">kg/m²</span></div>
+      <div id="ma-note" class="muted">当前窗无基频识别峰</div>
+      <canvas id="ma-trend" height="54" title="m̂_a 稀疏趋势（灰点为识别窗）"></canvas>
+    </div>
+
+    <h2>响应强度 <span class="muted h2-note">（加速度 RMS，随风速变化）</span></h2>
+    <canvas id="acc-trend" height="54"></canvas>
+
+    <h2>整体性脉动指数 <span class="muted h2-note">（P1 系数 RMS，POD 全局模态）</span></h2>
+    <canvas id="pod-trend" height="54"></canvas>
+
+    <h2>测点时程 <span class="muted h2-note">（精华段 10 Hz）</span></h2>
+    <div id="sensor-card">
+      <select id="sensor-select"></select>
+      <canvas id="sensor-chart" height="64"></canvas>
+    </div>
+
+    <h2>风析 · 风速-响应 <span class="muted h2-note">（散点 + 分箱中位线）</span></h2>
+    <canvas id="wind-scatter" height="90"></canvas>
+
+    <h2>风析 · 分风向响应 <span class="muted h2-note">（各风向扇区中位线）</span></h2>
+    <canvas id="dir-chart" height="90"></canvas>
+
+    <h2>风析 · 整体性脉动传递 <span class="muted h2-note">（P1 指数 × 风速 + 幂律斜率）</span></h2>
+    <canvas id="pod-wind-chart" height="90"></canvas>
+
+    <h2>风析 · 相关性 <span class="muted h2-note">（全程窗级 Pearson r）</span></h2>
+    <div id="corr-card">
+      <div class="corr-row"><span>风速 × GNSS 位移</span><b id="c-wg">—</b></div>
+      <div class="corr-row"><span>风压 × GNSS 位移</span><b id="c-pg">—</b></div>
+      <div class="corr-row"><span>风速 × 风压</span><b id="c-wp">—</b></div>
+      <div class="corr-row"><span>模态幅值 × GNSS 位移</span><b id="c-mg">—</b></div>
+      <div class="corr-row"><span>模态幅值 × 风压</span><b id="c-mp">—</b></div>
+
+    </div>
+
+    <div class="divider"></div>
+    <p id="wind-data-note" class="note">3D 动画由各窗谱峰和有限元振型重构。</p>
+  </section>
+
+  <!-- 右栏：3D 重构动画 -->
+  <section class="view-panel">
+    <div id="viewport-w" class="viewport"></div>
+    <div id="freq-chip-w" class="freq-chip"><span id="chip-win">窗 —</span><span id="chip-wind">— m/s</span></div>
+    <div id="speed-box-w">
+      <label for="speed-slider-w">动画速度</label>
+      <input type="range" id="speed-slider-w" min="0.05" max="1.0" step="0.05" value="0.25">
+    </div>
+    <div id="view-toggle">
+      <button class="vt-btn active" data-mode="shape">振型</button>
+      <button class="vt-btn" data-mode="press">风压云图</button>
+      <button class="vt-btn" data-mode="both">叠加</button>
+      <button class="vt-btn" data-mode="comp">复合</button>
+    </div>
+    <button id="pod-toggle" hidden title="用前 K 个全局模态重构风压场（替代 12 点插值）"></button>
+    <div id="maxpoint-note" title="每窗能量最大位移节点（Σ w²φ² 口径）"></div>
+    <div id="photo-panel" hidden>
+      <button id="photo-close" title="关闭">×</button>
+      <img id="photo-img" alt="现场照片">
+      <div id="photo-cap"></div>
+    </div>
+    <div id="synth-note">频域重构（代表性合成）</div>
+    <div id="legend-w" class="legend">
+      <span class="legend-label">幅值</span>
+      <div id="legend-bar-w"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" hidden></div>
+
+<div id="loading">
+  <div id="loading-spin"></div>
+  <div id="loading-text">正在加载 …</div>
+</div>
+
+<script type="module" src="/static/boot.js?v=11"></script>
+<script type="module" src="/static/combos.js?v=1"></script>
+<!-- 模态组合库面板（模块一子集，默认隐藏） -->
+<div id="combo-panel" hidden>
+  <div class="cp-head">
+    <b>模态组合库 · 最不利组合</b>
+    <select id="combo-k">
+      <option value="3">前 3 阶</option>
+      <option value="4">前 4 阶</option>
+      <option value="5">前 5 阶</option>
+    </select>
+    <button id="combo-close" title="关闭">×</button>
+  </div>
+  <div class="cp-note">等权同相包络 · 点行在 3D 显示该组合与最不利点（红点）</div>
+  <div id="combo-table-wrap"><table id="combo-table"></table></div>
+</div>
+</body>
+</html>

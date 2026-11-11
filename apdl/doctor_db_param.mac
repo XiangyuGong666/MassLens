@@ -1,0 +1,19 @@
+! ============================================================
+! doctor_db_param.mac -- parametrized doctor_db (standalone reference copy)
+! Writes added-mass density into db; caller must define MASS_A (kg/m2).
+! dens_eff = 1200 + MASS_A/0.0012  (shell thickness 1.2 mm; membrane only)
+!
+! WARNING: do NOT /INPUT this file from another .mac -- macro-local
+! parameter scope hides MASS_A. Use it only as a top-level input file
+! (e.g. ANSYS242.exe -i doctor_db_param.mac) or inline it, as run_case.inp
+! does.
+! ============================================================
+FINISH
+/FILNAME,run_pressure_only,1
+RESUME,run_pressure_only,db
+/PREP7
+dens_eff = 1200 + MASS_A/0.0012
+mp,dens,1,dens_eff
+FINISH
+SAVE
+FINISH

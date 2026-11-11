@@ -1,0 +1,286 @@
+/* WindLens 风透镜页专用样式（复用 style.css 主题变量） */
+
+#mode-nav { display: flex; gap: 6px; }
+.nav-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.nav-tab:hover { color: var(--text); border-color: var(--panel-edge); }
+.nav-tab.active { color: #081018; background: var(--accent2); font-weight: 600; }
+
+/* 纯净模式入口：普通整页跳转，不走 boot.js 的 SPA 标签拦截（class 不能含 nav-tab） */
+.zen-link {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.zen-link:hover { color: var(--text); border-color: var(--panel-edge); }
+
+.mono { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+#play-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+#play-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-edge);
+  background: var(--bg1);
+  color: var(--accent2);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#play-btn:hover { border-color: var(--accent2); box-shadow: 0 0 12px rgba(56,189,248,0.3); }
+#speed-select, #event-select {
+  padding: 7px 9px;
+  background: var(--bg1);
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+#event-select { width: 100%; }
+
+#timeline, #ma-trend, #acc-trend, #pod-trend, #dir-chart, #pod-wind-chart {
+  width: 100%;
+  background: var(--bg1);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  cursor: crosshair;
+}
+#ma-trend, #acc-trend, #pod-trend, #dir-chart, #pod-wind-chart { cursor: default; }
+
+#wind-card { display: flex; align-items: center; justify-content: space-between; }
+#wind-speed-big {
+  font-family: var(--mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+#compass { flex: none; }
+#compass-arrow { transform-origin: 50px 50px; transition: transform 0.3s; }
+
+/* 条形列表（风压/GNSS/模态峰） */
+.bar-list { display: flex; flex-direction: column; gap: 5px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.bar-label { flex: none; width: 52px; color: var(--text-dim); font-family: var(--mono); }
+.bar-track { flex: 1; height: 8px; border-radius: 4px; background: #1a2440; overflow: hidden; }
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent2);
+  transition: width 0.25s ease-out;
+}
+.bar-fill.amber { background: var(--accent); }
+.bar-fill.qA { background: #34d399; }
+.bar-fill.qB { background: #38bdf8; }
+.bar-fill.qC { background: #fbbf24; }
+.bar-val { flex: none; width: 64px; text-align: right; font-family: var(--mono); color: var(--text-dim); }
+
+#ma-big {
+  font-family: var(--mono);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--accent);
+}
+#ma-big .unit { font-size: 13px; color: var(--text-dim); font-weight: 400; }
+#ma-note { font-size: 12px; margin: 2px 0 8px; }
+
+#synth-note {
+  position: absolute;
+  right: 14px; top: 14px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ---------- 第 17 晚：最大响应点角标（左下，避让速度盒） ---------- */
+#maxpoint-note {
+  position: absolute;
+  left: 14px; bottom: 14px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: #fca5a5;
+  pointer-events: none;
+}
+
+/* ---------- 第 17 晚：现场照片面板 ---------- */
+#photo-panel {
+  position: absolute;
+  right: 14px; bottom: 14px;
+  max-width: 42%; max-height: 60%;
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  padding: 8px;
+  z-index: 6;
+}
+#photo-panel img {
+  display: block;
+  max-width: 100%; max-height: 46vh;
+  border-radius: 6px;
+}
+#photo-cap { font-size: 12px; color: var(--text-dim); padding-top: 6px; }
+#photo-close {
+  position: absolute; right: 4px; top: 2px;
+  background: none; border: none; color: var(--text-dim);
+  font-size: 18px; cursor: pointer;
+}
+#photo-close:hover { color: #fff; }
+
+/* ---------- 第 3 晚：精华段与视图切换 ---------- */
+#view-toggle {
+  position: absolute;
+  left: 14px; top: 62px;
+  display: flex;
+  gap: 4px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid var(--panel-edge);
+  border-radius: 9px;
+  padding: 4px;
+}
+.vt-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.vt-btn:hover { color: var(--text); }
+.vt-btn.active { background: var(--accent2); color: #081018; font-weight: 600; }
+
+#sensor-card select {
+  width: 100%;
+  padding: 7px 9px;
+  margin-bottom: 8px;
+  background: var(--bg1);
+  color: var(--text);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+#sensor-chart, #wind-scatter {
+  width: 100%;
+  background: var(--bg1);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+}
+
+/* ---------- 第 4 晚：高光瞬间导航 ---------- */
+#hl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+#hl-row .field-label { flex: 1; font-size: 11px; }
+.hl-btn {
+  width: 30px; height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--panel-edge);
+  background: var(--bg1);
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.hl-btn:hover { border-color: var(--accent); }
+
+/* ---------- 第 6 晚：相关性卡 / 复合振型 ---------- */
+.corr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 2px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(30, 42, 69, 0.5);
+}
+.corr-row span { color: var(--text-dim); }
+.corr-row b { font-family: var(--mono); font-size: 15px; color: var(--accent2); }
+.corr-note { font-size: 12px; line-height: 1.6; margin-top: 8px; }
+
+/* ---------- 第 7 晚：POD 风压场 ---------- */
+#pod-toggle {
+  position: absolute;
+  left: 14px; top: 106px;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#pod-toggle.off {
+  border-color: var(--panel-edge);
+  background: rgba(10, 14, 26, 0.72);
+  color: var(--text-dim);
+}
+
+/* ---------- 第 13 晚：模态峰条固定槽（布局不跳动） ---------- */
+#peaks-card { min-height: 150px; position: relative; }
+#peaks-empty { visibility: hidden; }  /* 常驻占位，只变透明度 */
+#peaks-empty.show { visibility: visible; }
+
+/* ---------- 第 17 晚：C 级低置信峰提示（与 empty 互斥、同位叠加） ---------- */
+#peaks-lowq { visibility: hidden; color: #fbbf24; position: absolute; top: 8px; left: 0; }
+#peaks-lowq.show { visibility: visible; }
+
+/* ---------- 第 14 晚：WindLens 动画速度 ---------- */
+#speed-box-w {
+  position: absolute;
+  right: 14px; bottom: 64px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  width: 130px;
+}
+#speed-box-w input { margin-top: 6px; }
+#speed-box-w input[type="range"]::-webkit-slider-thumb { border-color: var(--accent2); width: 12px; height: 12px; }
+
+/* ---------- 第 15 晚：风速微趋势 ---------- */
+#wind-micro {
+  width: 100%;
+  margin-top: 8px;
+  background: var(--bg1);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+}
+
+.synthetic-demo::before {
+  content: "合成风振演示";
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  pointer-events: none;
+  background: #17243b;
+  color: #dbeafe;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+#main-w.synthetic-demo { position: relative; }

@@ -1,0 +1,90 @@
+! ============================================================
+! lp_modal20_export.mac -- MassLens LP modal restart + result export
+! New-model path (2026-10-27): planC rdb-patch, verified against
+!   05_独立复核与附加质量/planC_refined_直接解验证 (m_a*=1.333 -> f1=0.550045).
+!   sweep.py binary-patches mat-1 density inside run_pressure_only.rdb;
+!   the db is NOT doctored and NOT copied over the rdb (doing so turns the
+!   restart base into the post-modal MODAL state -> MAPDL rejects the LP
+!   restart with "prestressed analysis may not be performed when the
+!   previous analysis used NLGEOM,ON").
+! Stiffness/prestress = PG base state (LS190); true E swapped in below so
+!   SOLVE,ELFORM rebuilds the tangent stiffness with 1.2e9/1.6e11, same
+!   basis as the 600-mode library (freqs600.csv, f1=0.640055).
+! Difference vs verify version: MODOPT,LANB,20 + MXPAND,20,,,YES (expanded
+! modes), and POST1 exports from rstp: node_map.txt / freqs.txt / modes.txt.
+! NOTE: this macro does NOT /EXIT; run_case.inp finishes the session.
+! ============================================================
+FINISH
+/FILNAME,run_pressure_only,1
+RESUME,run_pressure_only,db
+
+! ---- true elastic moduli (LP tangent stiffness via SOLVE,ELFORM) ----
+/PREP7
+mp,ex,1,1.200000E+09     ! TRUE membrane E
+mp,ex,2,1.600000E+11     ! TRUE cable E
+FINISH
+
+/SOLU
+ANTYPE,STATIC,REST,,,PERTURB
+PERTURB,MODAL
+
+! form the linear perturbation equations first
+SOLVE,ELFORM
+
+! then define modal extraction parameters
+MODOPT,LANB,20
+MXPAND,20,,,YES
+
+! clear any inherited Rayleigh damping
+ALPHAD,0
+BETAD,0
+
+! solve the modes
+SOLVE
+
+FINISH
+
+! ---- export: POST1 reads rstp (pattern verified in export450.mac) ----
+/POST1
+FILE,run_pressure_only,rstp
+*GET,nn,NODE,0,COUNT
+*DIM,arrx,ARRAY,nn
+*DIM,arry,ARRAY,nn
+*DIM,arrz,ARRAY,nn
+
+! ---- node row map (row i -> ANSYS node id), for Python mesh alignment ----
+! (2024R2 quirk: I-format in *VWRITE prints asterisks; use E-format instead)
+*CFOPEN,node_map,txt
+*GET,nd,NODE,0,NUM,MIN
+*DO,i,1,nn
+*VWRITE,i,nd
+(2E25.16)
+nd = ndnext(nd)
+*ENDDO
+*CFCLOSE
+
+! ---- frequency table (one per line, Hz) ----
+*CFOPEN,freqs,txt
+*DO,i,1,20
+SET,1,i
+*GET,fi,ACTIVE,0,SET,FREQ
+*VWRITE,fi
+(E25.16)
+*ENDDO
+*CFCLOSE
+
+! ---- mode shape displacements (per mode: MODE header + nn rows 3E25.16) ----
+*CFOPEN,modes,txt
+*DO,i,1,20
+SET,1,i
+*VGET,arrx,NODE,1,U,X
+*VGET,arry,NODE,1,U,Y
+*VGET,arrz,NODE,1,U,Z
+*VWRITE,'MODE',i
+(A4,F8.0)
+*VWRITE,arrx(1),arry(1),arrz(1)
+(3E25.16)
+*ENDDO
+*CFCLOSE
+
+FINISH

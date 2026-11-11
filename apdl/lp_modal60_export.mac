@@ -1,0 +1,83 @@
+! ============================================================
+! lp_modal60_export.mac -- MassLens LP modal restart + export, 60 modes variant
+! Same as lp_modal20_export.mac but MODOPT/MXPAND/loops at 60 (WindLens 需要
+! 覆盖实测 2~3 Hz 峰的真高阶振型；20 阶只到 1.63 Hz)。
+! New-model path (2026-10-27): planC -- rdb density binary-patched by the
+! driver script; db is NOT doctored / NOT copied over rdb. True E swapped
+! in below so SOLVE,ELFORM rebuilds tangent stiffness with 1.2e9/1.6e11
+! (same basis as freqs600.csv, f1=0.640055).
+! NOTE: does NOT /EXIT; driver finishes the session.
+! ============================================================
+FINISH
+/FILNAME,run_pressure_only,1
+RESUME,run_pressure_only,db
+
+! ---- true elastic moduli (LP tangent stiffness via SOLVE,ELFORM) ----
+/PREP7
+mp,ex,1,1.200000E+09     ! TRUE membrane E
+mp,ex,2,1.600000E+11     ! TRUE cable E
+FINISH
+
+/SOLU
+ANTYPE,STATIC,REST,,,PERTURB
+PERTURB,MODAL
+
+! form the linear perturbation equations first
+SOLVE,ELFORM
+
+! then define modal extraction parameters
+MODOPT,LANB,60
+MXPAND,60,,,YES
+
+! clear any inherited Rayleigh damping
+ALPHAD,0
+BETAD,0
+
+! solve the modes
+SOLVE
+
+FINISH
+
+! ---- export: POST1 reads rstp ----
+/POST1
+FILE,run_pressure_only,rstp
+*GET,nn,NODE,0,COUNT
+*DIM,arrx,ARRAY,nn
+*DIM,arry,ARRAY,nn
+*DIM,arrz,ARRAY,nn
+
+! ---- node row map (row i -> ANSYS node id) ----
+*CFOPEN,node_map,txt
+*GET,nd,NODE,0,NUM,MIN
+*DO,i,1,nn
+*VWRITE,i,nd
+(2E25.16)
+nd = ndnext(nd)
+*ENDDO
+*CFCLOSE
+
+! ---- frequency table (one per line, Hz) ----
+*CFOPEN,freqs,txt
+*DO,i,1,60
+SET,1,i
+*GET,fi,ACTIVE,0,SET,FREQ
+*VWRITE,fi
+(E25.16)
+*ENDDO
+*CFCLOSE
+
+! ---- mode shape displacements (per mode: MODE header + nn rows 3E25.16) ----
+*CFOPEN,modes,txt
+*DO,i,1,60
+SET,1,i
+*VGET,arrx,NODE,1,U,X
+*VGET,arry,NODE,1,U,Y
+*VGET,arrz,NODE,1,U,Z
+*VWRITE,'MODE',i
+(A4,F8.0)
+*VWRITE,arrx(1),arry(1),arrz(1)
+(3E25.16)
+*ENDDO
+*CFCLOSE
+
+FINISH
